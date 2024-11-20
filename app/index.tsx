@@ -1,11 +1,11 @@
-// app/(tabs)/index.tsx
+// app/index.tsx
 import React from 'react';
 import { View, Text } from 'react-native';
 
-export default function HomeTab() {
+export default function Home() {
   return (
     <View>
-      <Text>Home Tab Screen</Text>
+      <Text>Halo</Text>
     </View>
   );
 }
