@@ -1,37 +1,51 @@
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
-import * as nodemailer from 'nodemailer';
+import * as functions from "firebase-functions";
+import nodemailer from "nodemailer";
+import {Request, Response} from "express";
 
-admin.initializeApp();
-
-// Configure Gmail SMTP
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
-    user: 'your_email@gmail.com',
-    pass: 'your_email_password',
+    user: "your-email@gmail.com", // Replace with your email
+    pass: "your-app-password", // Replace with your app password
   },
 });
 
-export const sendVerificationCode = functions.https.onCall(
-  async (
-    request: functions.https.CallableRequest<{ email: string; code: string }>
-  ): Promise<{ success: boolean }> => {
-    const { email, code } = request.data; // Extract `email` and `code` from `request.data`
+// Function to generate a 6-digit verification code
+const generateCode = (): string =>
+  Math.floor(100000 + Math.random() * 900000).toString();
+
+// Cloud function to send a verification email
+export const sendVerificationEmail = functions.https.onRequest(
+  async (req: Request, res: Response): Promise<void> => {
+    const {email} = req.body;
+
+    // Validate the email field
+    if (!email) {
+      res.status(400).json({error: "Email is required"});
+      return;
+    }
+
+    const verificationCode = generateCode();
 
     const mailOptions = {
-      from: 'your_email@gmail.com',
+      from: "your-email@gmail.com", // Replace with your email
       to: email,
-      subject: 'Your Verification Code',
-      text: `Your verification code is: ${code}`,
+      subject: "Verification Code",
+      text: `Your verification code is: ${verificationCode}`,
+      html: `<p>Your verification code is: <strong>
+      ${verificationCode}</strong></p>`,
     };
 
     try {
+      // Send email
       await transporter.sendMail(mailOptions);
-      return { success: true }; // Return success response
+      res.status(200).json({
+        message: "Verification code sent successfully",
+        code: verificationCode, 
+      });
     } catch (error) {
-      console.error('Error sending email:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to send email');
+      console.error("Error sending email:", error);
+      res.status(500).json({error: "Failed to send email"});
     }
   }
 );

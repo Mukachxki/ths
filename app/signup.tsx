@@ -1,4 +1,3 @@
-// app/signup.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -9,7 +8,6 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { auth } from '../firebaseConfig';
 import { useRouter } from 'expo-router';
 
 export default function Signup() {
@@ -22,20 +20,29 @@ export default function Signup() {
   const [generatedCode, setGeneratedCode] = useState('');
   const router = useRouter();
 
-  const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
-
   const sendVerificationCode = async () => {
-    const code = generateCode();
-    setGeneratedCode(code);
-
     try {
-      // Simulating email send (replace with actual email service)
-      Alert.alert('Verification Code Sent', `Code: ${code}`);
-      setCodeSent(true);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        Alert.alert('Error Sending Code', error.message);
+      // Send POST request to the backend to trigger sending the verification email
+      const response = await fetch('http://192.168.0.10:3000/send-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setGeneratedCode(data.code); // Set the generated code for later validation
+        setCodeSent(true);
+        Alert.alert('Verification Code Sent', `Code has been sent to ${email}`);
+      } else {
+        Alert.alert('Error', data.error);
       }
+    } catch (error) {
+      console.error('Error sending verification code:', error);
+      Alert.alert('Error', 'Failed to send verification code');
     }
   };
 
@@ -51,8 +58,9 @@ export default function Signup() {
     }
 
     try {
-      await auth.createUserWithEmailAndPassword(email, password);
-      // Normally, you’d also store the first and last name in your database here
+      // You can use Firebase authentication here if needed
+      // await auth.createUserWithEmailAndPassword(email, password);
+
       router.push('/welcome'); // Redirect to welcome page after signup
     } catch (error: unknown) {
       if (error instanceof Error) {
