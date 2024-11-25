@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  Alert,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import {  View,  Text,  TextInput,  Button,  Alert,  StyleSheet,  TouchableOpacity,} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { auth } from '../firebaseConfig'; 
+import { auth } from '../firebaseConfig';
 import { useRouter } from 'expo-router';
 
 export default function Signup(): JSX.Element {
@@ -27,24 +19,32 @@ export default function Signup(): JSX.Element {
       Alert.alert('Validation Error', 'Please fill in all fields.');
       return;
     }
-
+  
     try {
       // Create user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
+  
       // Send verification email
       await sendEmailVerification(user);
       Alert.alert('Verification Email Sent', 'Please check your email to verify your account.');
-
-      // Navigate to login page
-      router.push('/login');
+  
+      // Navigate to welcome page with parameters
+      router.push({
+        pathname: '/welcome',
+        params: {
+          fullName,
+          email,
+          idNumber,
+          course: selectedCourse,
+        },
+      });
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
       Alert.alert('Signup Error', errorMessage);
     }
   };
-
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Signup</Text>
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
   },
   loginText: {
     fontSize: 16,
-    color: '#666',  
+    color: '#666',
   },
   loginLink: {
     fontSize: 16,

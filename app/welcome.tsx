@@ -1,25 +1,17 @@
-// app/welcome.tsx
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
-import { auth } from '../firebaseConfig';
+import { View, Text, StyleSheet } from 'react-native';
+import { useLocalSearchParams } from 'expo-router'; // Correct hook for search params
 
-export default function Welcome() {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      router.push('/login'); // Redirect to login after logout
-    } catch (error: unknown) {
-      console.error('Logout error', error);
-    }
-  };
+export default function Welcome(): JSX.Element {
+  const { fullName, email, idNumber, course } = useLocalSearchParams();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Halo</Text>
-      <Button title="Logout" onPress={handleLogout} />
+      <Text style={styles.title}>Welcome</Text>
+      <Text>Full Name: {fullName}</Text>
+      <Text>Email: {email}</Text>
+      <Text>ID Number: {idNumber}</Text>
+      <Text>Course: {course}</Text>
     </View>
   );
 }
@@ -35,6 +27,5 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: 'center',
   },
 });
