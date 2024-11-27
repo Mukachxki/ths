@@ -1,15 +1,7 @@
 // app/login.tsx
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  Alert,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
-import { auth } from '../firebaseConfig';
+import { View, Text, TextInput, Button, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { auth, db } from '../firebaseConfig';
 import { useRouter } from 'expo-router';
 
 export default function Login() {
@@ -24,8 +16,35 @@ export default function Login() {
     }
 
     try {
-      await auth.signInWithEmailAndPassword(email, password);
-      router.push('/welcome'); // Redirect to welcome page after login
+      // Authenticate the user
+      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+     
+      if (!user) {
+        Alert.alert('Login Error', 'User authentication failed.');
+        return;
+      }
+
+      // Fetch user data from Firestore
+      const userDoc = await db.collection('users').doc(user.uid).get();
+      if (!userDoc.exists) {
+        Alert.alert('Login Error', 'User data not found.');
+        return;
+      }
+
+      const userData = userDoc.data();
+
+
+      router.push({
+        pathname: '/welcome',
+        params: {
+          fullName: userData?.fullName,
+          email: userData?.email,
+          idNumber: userData?.idNumber,
+          course: userData?.course,
+          phoneNumber: userData?.phoneNumber,
+        },
+      });
     } catch (error: unknown) {
       if (error instanceof Error) {
         let errorMessage = 'An error occurred while logging in.';

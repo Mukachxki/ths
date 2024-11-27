@@ -1,9 +1,11 @@
+// app/signup.tsx
 import React, { useState } from 'react';
-import {  View,  Text,  TextInput,  Button,  Alert,  StyleSheet,  TouchableOpacity,} from 'react-native';
+import { View, Text, TextInput, Button, Alert, StyleSheet, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import { useRouter } from 'expo-router';
+import { db } from "../firebaseConfig";
 
 export default function Signup(): JSX.Element {
   const [fullName, setFullName] = useState<string>('');
@@ -25,13 +27,22 @@ export default function Signup(): JSX.Element {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
   
+      // Store user data in Firestore
+      await db.collection('users').doc(user.uid).set({
+        fullName,
+        idNumber,
+        phoneNumber,
+        course: selectedCourse,
+        email,
+      });
+  
       // Send verification email
       await sendEmailVerification(user);
       Alert.alert('Verification Email Sent', 'Please check your email to verify your account.');
   
-      // Navigate to welcome page with parameters
+      // Navigate to the verification page
       router.push({
-        pathname: '/welcome',
+        pathname: '/verify',
         params: {
           fullName,
           email,
