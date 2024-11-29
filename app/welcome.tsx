@@ -1,14 +1,13 @@
-// app/welcome.tsx
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Button } from 'react-native';
-import { useLocalSearchParams } from 'expo-router'; // Correct hook for search params
-import { auth } from '../firebaseConfig'; // Assuming auth is correctly initialized from firebaseConfig
+import { useLocalSearchParams } from 'expo-router';
+import { auth } from '../firebaseConfig';
 import { useRouter } from 'expo-router';
 
 export default function Welcome(): JSX.Element {
   const { fullName, email, idNumber, course, phoneNumber } = useLocalSearchParams();
   const [isVerified, setIsVerified] = useState(false);
-  const [loading, setLoading] = useState(true); // New state to manage loading
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -25,13 +24,13 @@ export default function Welcome(): JSX.Element {
       router.push('/login');
     }
 
-    setLoading(false); 
+    setLoading(false);
   }, [router]);
 
   const handleLogout = async () => {
     try {
-      await auth.signOut(); 
-      router.push('/login'); 
+      await auth.signOut();
+      router.push('/login');
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
       alert(`Logout Failed: ${errorMessage}`);
@@ -41,7 +40,7 @@ export default function Welcome(): JSX.Element {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0000ff" /> {/* Show loading spinner */}
+        <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   }
@@ -62,7 +61,18 @@ export default function Welcome(): JSX.Element {
       <Text>ID Number: {idNumber}</Text>
       <Text>Course: {course}</Text>
       <Text>Phone Number: {phoneNumber}</Text>
-      <Button title="Log Out" onPress={handleLogout} /> {/* Log Out Button */}
+
+      
+      <View style={styles.horizontalButtons}>
+        <Button title="Welcome" onPress={() => router.push('./welcome')} />
+        <Button title="Home" onPress={() => router.push('./home')} />
+        <Button title="Request" onPress={() => router.push('./request')} />
+      </View>
+
+      
+      <View style={styles.logoutButton}>
+        <Button title="Log Out" onPress={handleLogout} />
+      </View>
     </View>
   );
 }
@@ -78,5 +88,15 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+  },
+  horizontalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 20,
+    width: '80%',
+  },
+  logoutButton: {
+    marginTop: 20,
+    alignSelf: 'center',
   },
 });
